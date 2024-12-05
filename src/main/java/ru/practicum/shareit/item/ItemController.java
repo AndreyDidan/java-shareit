@@ -29,23 +29,25 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                @RequestParam(value = "text", defaultValue = ""
-                                ) String text) {
+    public List<ItemDto> search(
+            @RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(value = "text", defaultValue = "") String text
+    ) {
+        if (text.isBlank()) {
+            return List.of();
+        }
         return itemService.search(text);
     }
 
     @PostMapping
-    public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                              @RequestBody @Valid CreateItemDto createItemDto) {
+    public ItemDto createItem(
+            @RequestHeader("X-Sharer-User-Id") Long userId, @RequestBody @Valid CreateItemDto createItemDto) {
         return itemService.createItem(userId, createItemDto);
     }
 
     @PatchMapping("/{id}")
-    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                              @PathVariable("id") Long itemId,
-                              @RequestBody ItemDto itemDto
-                              ) {
+    public ItemDto updateItem(
+            @RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable("id") Long itemId,
+            @RequestBody ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
     }
 }

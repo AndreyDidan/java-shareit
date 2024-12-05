@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.*;
@@ -24,9 +23,6 @@ public class ItemRepositoryImpi implements ItemRepository {
 
     @Override
     public Item updateItem(Long itemId, Item item) {
-        if (!items.containsKey(itemId)) {
-            throw new NotFoundException("Вещь с id = " + itemId + " не найдена!");
-        }
         Item updateItem = items.get(itemId);
         item.setId(itemId);
         item.setOwner(updateItem.getOwner());
@@ -41,10 +37,7 @@ public class ItemRepositoryImpi implements ItemRepository {
 
     @Override
     public Optional<Item> getItemById(Long id) {
-        if (items.containsKey(id)) {
-            return Optional.of(items.get(id));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(items.get(id));
     }
 
     @Override
@@ -54,10 +47,6 @@ public class ItemRepositoryImpi implements ItemRepository {
 
     @Override
     public List<Item> search(String text) {
-        if (items.values().isEmpty()) {
-            return List.of();
-        }
-
         return items.values().stream()
                 .filter(Item::getAvailable)
                 .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||

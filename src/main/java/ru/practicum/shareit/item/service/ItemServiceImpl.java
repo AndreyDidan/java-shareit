@@ -33,10 +33,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
 
-        Item item = itemRepository.getItemById(itemId).orElseThrow(() -> new NotFoundException("Вещь с id = "
-                + itemId + " не найдена!"));
-        User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id = "
-                + userId + " не найден!"));
+        Item item = itemRepository.getItemById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена!"));
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден!"));
         if (itemDto.getOwner() != null && !itemDto.getOwner().getId().equals(userId)) {
             throw new ValidationException("Вещь с id " + itemId + " не пренадлежит пользователю с id " + userId);
         }
@@ -50,6 +50,7 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDto.getAvailable());
         }
 
+        item = ItemMapper.mapToUpdatedItem(item, itemDto, itemId, owner);
         itemRepository.updateItem(itemId, item);
         return ItemMapper.mapToItemDto(item);
     }
@@ -84,9 +85,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> search(String text) {
-        if (text.isBlank()) {
-            return List.of();
-        }
         return itemRepository.search(text).stream()
                 .map(ItemMapper::mapToItemDto)
                 .toList();
