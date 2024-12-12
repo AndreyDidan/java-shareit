@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.user.User;
 
 @Data
 @Builder
@@ -20,6 +19,5 @@ public class CreateItemDto {
     private String description;
     @NotNull
     private Boolean available;
-    private User owner;
     private ItemRequestDto request;
 }

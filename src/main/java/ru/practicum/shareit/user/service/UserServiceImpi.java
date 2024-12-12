@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.DuplicatedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.CreateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -29,7 +29,7 @@ public class UserServiceImpi implements UserService {
         if (userRepository.findByEmail(createUserDto.getEmail()).isPresent()) {
             throw new DuplicatedException("Пользователь с таким email уже существует");
         }
-        User newUser = userRepository.create(user);
+        User newUser = userRepository.save(user);
         return UserMapper.mapToUserDto(newUser);
     }
 
@@ -40,7 +40,7 @@ public class UserServiceImpi implements UserService {
         }
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден!"));
         User updateUser = update(user, userDto);
-        User userUpdate = userRepository.update(id, updateUser);
+        User userUpdate = userRepository.save(updateUser);
         return UserMapper.mapToUserDto(userUpdate);
     }
 
@@ -48,7 +48,7 @@ public class UserServiceImpi implements UserService {
     public void deleteUser(Long id) {
         User deleteUser = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден!"));
-        userRepository.delete(deleteUser.getId());
+        userRepository.deleteById(deleteUser.getId());
     }
 
     private User update(User user, UserDto userDto) {
