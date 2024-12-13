@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -19,6 +19,7 @@ import ru.practicum.shareit.booking.BookingMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +48,15 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<BookingDto> getBookingsForItem(Long itemId) {
+        List<Booking> bookings = bookingRepository.findByItemId(itemId);
+        return bookings.stream()
+                .map(BookingMapper::mapToBookingDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public BookingDto update(Long userId, Long bookingId, Boolean approved) {
 
@@ -61,6 +71,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingDto findBookingById(Long userId, Long bookingId) {
         User user = findUserById(userId);
         Booking booking = findBookingById(bookingId);
@@ -72,14 +83,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllUsersBookings(Long userId, String state) {
         User booker = findUserById(userId);
-        BookingState bookingState = validateBookingState(state);
+        BookingState bookingState = BookingState.fromString(state);
 
         return switch (bookingState) {
-            case ALL -> BookingMapper.mapToListBookingDto(
-                    bookingRepository.findByBookerIdOrderByStartDesc(userId));
+            case ALL -> BookingMapper.mapToListBookingDto(bookingRepository.findByBookerIdOrderByStartDesc(userId));
             case PAST -> BookingMapper.mapToListBookingDto(
                     bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(booker.getId(), LocalDateTime.now()));
             case CURRENT -> BookingMapper.mapToListBookingDto(
@@ -94,9 +104,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllOwnerBookings(Long userId, String state) {
         User owner = findUserById(userId);
-        BookingState bookingState = validateBookingState(state);
+        BookingState bookingState = BookingState.fromString(state);
 
         return switch (bookingState) {
             case ALL -> BookingMapper.mapToListBookingDto(
@@ -122,15 +133,5 @@ public class BookingServiceImpl implements BookingService {
     private Booking findBookingById(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Не найдено бронирование с id =" + bookingId));
-    }
-
-    private BookingState validateBookingState(String state) {
-        BookingState bookingState;
-        try {
-            bookingState = BookingState.valueOf(state.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Неподдерживаемый формат state: " + state);
-        }
-        return bookingState;
     }
 }

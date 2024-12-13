@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
+import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.BadRequestException;
 
 import java.util.List;
 
@@ -18,6 +20,20 @@ public class BookingController {
     @PostMapping
     public BookingDto createBooking(@RequestHeader("X-Sharer-User-Id") Long bookerId,
                                     @Valid @RequestBody CreateBookingDto createBookingDto) {
+        if (createBookingDto.getEnd().isBefore(createBookingDto.getStart())) {
+            throw new BadRequestException("Дата окончания бронирования не может быть раньше даты начала.");
+        }
+        List<BookingDto> existingBookings = bookingService.getBookingsForItem(createBookingDto.getItemId());
+        boolean hasOverlap = existingBookings.stream()
+                .anyMatch(existingBooking -> existingBooking.getStatus() == Status.APPROVED &&
+                                (createBookingDto.getStart().isBefore(existingBooking.getEnd()) &&
+                                        createBookingDto.getEnd().isAfter(existingBooking.getStart()))
+                );
+
+        if (hasOverlap) {
+            throw new BadRequestException("Новое бронирование пересекается по времени с уже существующими.");
+        }
+
         return bookingService.create(bookerId, createBookingDto);
     }
 
