@@ -35,11 +35,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Optional<Booking> findByIdAndItemOwnerId(Long id, Long ownerId);
 
-    @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status = :status AND " +
-            "(b.start < :end AND b.end > :start)")
-    List<Booking> findOverlappingBookings(
-            @Param("itemId") Long itemId,
-            @Param("status") Status status,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
+    @Query("SELECT b FROM Booking b WHERE b.item.id = ?1 AND b.status = ?2 AND ((b.start < ?4 AND b.end > ?3))")
+    List<Booking> findOverlappingBookings(Long itemId, Status status, LocalDateTime start, LocalDateTime end);
 }
