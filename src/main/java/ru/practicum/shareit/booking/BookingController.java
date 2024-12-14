@@ -23,14 +23,7 @@ public class BookingController {
         if (createBookingDto.getEnd().isBefore(createBookingDto.getStart())) {
             throw new BadRequestException("Дата окончания бронирования не может быть раньше даты начала.");
         }
-        List<BookingDto> existingBookings = bookingService.getBookingsForItem(createBookingDto.getItemId());
-        boolean hasOverlap = existingBookings.stream()
-                .anyMatch(existingBooking -> existingBooking.getStatus() == Status.APPROVED &&
-                                (createBookingDto.getStart().isBefore(existingBooking.getEnd()) &&
-                                        createBookingDto.getEnd().isAfter(existingBooking.getStart()))
-                );
-
-        if (hasOverlap) {
+        if (bookingService.isBookingOverlapping(createBookingDto)) {
             throw new BadRequestException("Новое бронирование пересекается по времени с уже существующими.");
         }
 

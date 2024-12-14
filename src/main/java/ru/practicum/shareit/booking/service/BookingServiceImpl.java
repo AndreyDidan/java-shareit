@@ -134,4 +134,16 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Не найдено бронирование с id =" + bookingId));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isBookingOverlapping(CreateBookingDto createBookingDto) {
+        List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
+                createBookingDto.getItemId(),
+                Status.APPROVED,
+                createBookingDto.getStart(),
+                createBookingDto.getEnd()
+        );
+        return !overlappingBookings.isEmpty();
+    }
 }
