@@ -1,11 +1,16 @@
 package ru.practicum.shareit.item;
 
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CreateItemDto;
+import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequestMapper;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
+
+import java.util.List;
 
 @NoArgsConstructor
 public class ItemMapper {
@@ -31,8 +36,8 @@ public class ItemMapper {
     }
 
     public static Item mapToUpdatedItem(Item currentItem, ItemDto updatedFields, Long itemId, User owner) {
-        currentItem.setId(itemId); // ID остаётся прежним
-        currentItem.setOwner(owner); // Владельца устанавливаем из `owner` переданного в сервисе
+        currentItem.setId(itemId);
+        currentItem.setOwner(owner);
 
         if (updatedFields.getName() != null) {
             currentItem.setName(updatedFields.getName());
@@ -44,5 +49,20 @@ public class ItemMapper {
             currentItem.setAvailable(updatedFields.getAvailable());
         }
         return currentItem;
+    }
+
+    public static ItemCommentDto mapToItemAllDto(Item item, BookingDto lastBooking,
+                                                 BookingDto nextBooking, List<CommentDto> comments) {
+        ItemCommentDto allDto = new ItemCommentDto();
+        allDto.setId(item.getId());
+        allDto.setName(item.getName());
+        allDto.setDescription(item.getDescription());
+        allDto.setAvailable(item.getAvailable());
+        allDto.setOwner(item.getOwner());
+        allDto.setRequest(item.getRequest() != null ? ItemRequestMapper.toItemRequestDto(item.getRequest()) : null);
+        allDto.setLastBooking(lastBooking);
+        allDto.setNextBooking(nextBooking);
+        allDto.setComments(comments);
+        return allDto;
     }
 }
