@@ -42,6 +42,16 @@ public class BookingServiceImpl implements BookingService {
         if (createBookingDto.getEnd().isBefore(createBookingDto.getStart())) {
             throw new BadRequestException("Дата окончания бронирования не может быть раньше даты начала");
         }
+        List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
+                createBookingDto.getItemId(),
+                Status.APPROVED,
+                createBookingDto.getStart(),
+                createBookingDto.getEnd()
+        );
+        if (!overlappingBookings.isEmpty()) {
+            throw new BadRequestException("Новое бронирование пересекается по времени с уже существующими.");
+        }
+
         Booking booking = BookingMapper.mapToBooking(createBookingDto, user, item);
         bookingRepository.save(booking);
         return BookingMapper.mapToBookingDto(booking);
@@ -133,17 +143,5 @@ public class BookingServiceImpl implements BookingService {
     private Booking findBookingById(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Не найдено бронирование с id =" + bookingId));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isBookingOverlapping(CreateBookingDto createBookingDto) {
-        List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
-                createBookingDto.getItemId(),
-                Status.APPROVED,
-                createBookingDto.getStart(),
-                createBookingDto.getEnd()
-        );
-        return !overlappingBookings.isEmpty();
     }
 }

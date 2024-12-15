@@ -17,6 +17,4 @@ public interface BookingService {
     List<BookingDto> getBookingsForItem(Long itemId);
 
     List<BookingDto> getAllOwnerBookings(Long userId, String state);
-
-    boolean isBookingOverlapping(CreateBookingDto createBookingDto);
 }
