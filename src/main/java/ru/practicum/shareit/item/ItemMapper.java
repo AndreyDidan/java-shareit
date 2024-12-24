@@ -2,12 +2,14 @@ package ru.practicum.shareit.item;
 
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemsRequestDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.ItemRequestMapper;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -15,24 +17,35 @@ import java.util.List;
 @NoArgsConstructor
 public class ItemMapper {
     public static Item mapToItem(CreateItemDto createItemDto) {
+        if (createItemDto.getName() == null || createItemDto.getName().isBlank()) {
+            throw new ValidationException("Поле \"name\" обязательно для заполнения!");
+        }
         return Item.builder()
                 .name(createItemDto.getName())
                 .description(createItemDto.getDescription())
                 .available(createItemDto.getAvailable())
-                .request(createItemDto.getRequest() != null ? ItemRequestMapper
-                        .toItemRequest(createItemDto.getRequest()) : null)
                 .build();
     }
 
-    public static ItemDto mapToItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .owner(item.getOwner() != null ? item.getOwner() : null)
-                .request(item.getRequest() != null ? ItemRequestMapper.toItemRequestDto(item.getRequest()) : null)
-                .build();
+    public static Item mapToItem(CreateItemDto createItemDto, ItemRequest request) {
+        Item item = new Item();
+        item.setName(createItemDto.getName());
+        item.setDescription(createItemDto.getDescription());
+        item.setAvailable(createItemDto.getAvailable());
+        item.setRequest(request);
+        return item;
+    }
+
+    public static ItemsRequestDto mapToItemDto(Item item) {
+        ItemsRequestDto itemsRequestDto = new ItemsRequestDto();
+        itemsRequestDto.setId(item.getId());
+        itemsRequestDto.setName(item.getName());
+        itemsRequestDto.setDescription(item.getDescription());
+        itemsRequestDto.setAvailable(item.getAvailable());
+        if (item.getRequest() != null) {
+            itemsRequestDto.setRequestId(item.getRequest().getId());
+        }
+        return itemsRequestDto;
     }
 
     public static Item mapToUpdatedItem(Item currentItem, ItemDto updatedFields, Long itemId, User owner) {
@@ -59,7 +72,9 @@ public class ItemMapper {
         allDto.setDescription(item.getDescription());
         allDto.setAvailable(item.getAvailable());
         allDto.setOwner(item.getOwner());
-        allDto.setRequest(item.getRequest() != null ? ItemRequestMapper.toItemRequestDto(item.getRequest()) : null);
+        if (item.getRequest() != null) {
+            allDto.setRequestId(item.getRequest().getId());
+        }
         allDto.setLastBooking(lastBooking);
         allDto.setNextBooking(nextBooking);
         allDto.setComments(comments);

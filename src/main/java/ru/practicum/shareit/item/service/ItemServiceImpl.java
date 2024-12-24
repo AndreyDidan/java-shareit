@@ -19,9 +19,12 @@ import ru.practicum.shareit.item.comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemsRequestDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -38,23 +41,35 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     @Transactional
-    public ItemDto createItem(Long userId, CreateItemDto createItemDto) {
+    public ItemsRequestDto createItem(Long userId, CreateItemDto createItemDto) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден!"));
-
-        Item item = ItemMapper.mapToItem(createItemDto); // Картируем только данные из запроса
-        item.setOwner(owner); // Устанавливаем владельца вручную
+        if (createItemDto.getName() == null || createItemDto.getName().isBlank()) {
+            throw new ValidationException("Поле \"name\" обязательно для заполнения!");
+        }
+        Item item = new Item();
+        if (createItemDto.getRequestId() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(createItemDto.getRequestId()).orElse(null);
+            if (itemRequest != null) {
+                item = ItemMapper.mapToItem(createItemDto, itemRequest);
+            } else {
+                item = ItemMapper.mapToItem(createItemDto);
+            }
+        } else {
+            item = ItemMapper.mapToItem(createItemDto);
+        }
+        item.setOwner(owner);
         itemRepository.save(item);
-
         return ItemMapper.mapToItemDto(item);
     }
 
     @Override
     @Transactional
-    public ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
+    public ItemsRequestDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена!"));
@@ -73,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDto.getAvailable());
         }
         item = ItemMapper.mapToUpdatedItem(item, itemDto, itemId, owner);
-        Item itemUpdate = itemRepository.save(item);
+        itemRepository.save(item);
         return ItemMapper.mapToItemDto(item);
     }
 
@@ -94,7 +109,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemCommentDto getItemById(Long id, Long userId) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Вещь с id = " + id + " не найдена"));
-        List<CommentDto> comments = commentRepository.findAllByItemId(id).stream().map(CommentMapper::mapToCommentDto)
+        List<CommentDto> comments = commentRepository.findAllByItemId(id).stream()
+                .map(CommentMapper::mapToCommentDto)
                 .collect(Collectors.toList());
         BookingDto lastBooking = null;
 
@@ -122,7 +138,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDto> getAllItemsUser(Long userId) {
+    public List<ItemsRequestDto> getAllItemsUser(Long userId) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден!"));
         return itemRepository.findAllByOwnerId(owner.getId()).stream()
@@ -131,7 +147,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemsRequestDto> search(String text) {
         if (text == null || text.isBlank()) {
             return List.of();
         }

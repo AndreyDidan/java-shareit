@@ -1,27 +1,23 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.dto;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.item.dto.ItemsRequestDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Entity
-@Table(name = "requests")
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @Data
-public class ItemRequest {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@AllArgsConstructor
+@NoArgsConstructor
+public class ItemRequestInItemDto {
     private Long id;
     private String description;
-    @JoinColumn(name = "requestor_id")
-    @ManyToOne
     private User requestor;
     private LocalDateTime created;
+    private List<ItemsRequestDto> items;
 }

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 @Entity
@@ -25,7 +25,7 @@ public class Item {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "available") // Исправление названия колонки
+    @Column(name = "available")
     private Boolean available;
 
     @JoinColumn(name = "owner_id")
