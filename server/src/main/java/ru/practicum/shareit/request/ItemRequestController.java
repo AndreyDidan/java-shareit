@@ -13,12 +13,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemRequestController {
     private final ItemRequestService itemRequestService;
-    @PostMapping
-    public ItemRequestInItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestBody CreateItemRequestDto createItemRequestDto
-    ) {
-        return itemRequestService.create(userId, createItemRequestDto);
-    }
 
     @GetMapping
     public List<ItemRequestInItemDto> findByAuthor(@RequestHeader("X-Sharer-User-Id") Long userId) {
@@ -35,5 +29,12 @@ public class ItemRequestController {
     @GetMapping("/{requestId}")
     public ItemRequestInItemDto findById(@PathVariable Long requestId, @RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemRequestService.getRequestById(requestId, userId);
+    }
+
+    @PostMapping
+    public ItemRequestInItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                       @RequestBody CreateItemRequestDto createItemRequestDto
+    ) {
+        return itemRequestService.create(userId, createItemRequestDto);
     }
 }
