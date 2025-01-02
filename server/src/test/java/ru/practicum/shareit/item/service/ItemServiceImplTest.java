@@ -7,8 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.comment.dto.CommentDto;
+import ru.practicum.shareit.item.comment.dto.CreateCommentDto;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -18,6 +22,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,7 +49,8 @@ class ItemServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        createItemDto = new CreateItemDto("testItem", "testDescription", true, List.of(), null);
+        createItemDto = new CreateItemDto("testItem", "testDescription", true, null,
+                null);
         userDto = userService.createUser(new CreateUserDto("andrey", "andrey@mail.ru"));
         itemDto = new ItemDto(1L, "item", "item descr", true, null, userDto.getId());
     }
@@ -54,23 +60,6 @@ class ItemServiceImplTest {
         ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
         assertThat(itemsRequestDto.getName(), equalTo(createItemDto.getName()));
         assertThat(itemsRequestDto.getDescription(), equalTo(createItemDto.getDescription()));
-    }
-
-    @Test
-    void updateItemNotFound() {
-        User user = new User(1L, "testName", "test@mail.ru");
-        ItemDto itemDto = new ItemDto(1L, "testItem1", "testDescription1", true, user,
-                null);
-        Assertions.assertThrows(NotFoundException.class, () -> itemService.updateItem(userDto.getId(), 1L, itemDto));
-    }
-
-    @Test
-    void updateItemUserNotFound() {
-        Assertions.assertThrows(NotFoundException.class, () -> {
-            ItemDto itemDto = new ItemDto(1L, "testItem1", "testDescription1", true,
-                    null,null);
-            itemService.updateItem(1L, 1L, itemDto);
-        });
     }
 
     @Test
@@ -101,4 +90,48 @@ class ItemServiceImplTest {
         ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
         assertThat(itemService.search("test"), equalTo(List.of(itemsRequestDto)));
     }
+
+    @Test
+    void updateItem() {
+        UserDto userDto = userService.createUser(new CreateUserDto("test", "test@test.com"));
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
+        User user = new User(userDto.getId(), userDto.getName(), userDto.getEmail());
+        ItemDto itemDto1 = new ItemDto(itemsRequestDto.getId(), "newName", "NewDescription",
+                false, user, null);
+        ItemsRequestDto itemsRequestDtoUpdate = itemService.updateItem(userDto.getId(), itemsRequestDto.getId(), itemDto1);
+        assertThat(itemsRequestDtoUpdate.getName(), equalTo("newName"));
+        assertThat(itemsRequestDtoUpdate.getDescription(), equalTo("NewDescription"));
+        assertThat(itemsRequestDtoUpdate.getAvailable(), equalTo(false));
+    }
+
+    @Test
+    void updateItemNotFound() {
+        User user = new User(1L, "testName", "test@mail.ru");
+        ItemDto itemDto = new ItemDto(1L, "testItem1", "testDescription1", true, user,
+                null);
+        Assertions.assertThrows(NotFoundException.class, () -> itemService.updateItem(userDto.getId(), 1L, itemDto));
+    }
+
+    @Test
+    void updateItemUserNotFound() {
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            ItemDto itemDto = new ItemDto(1L, "testItem1", "testDescription1", true,
+                    null,null);
+            itemService.updateItem(1L, 1L, itemDto);
+        });
+    }
+
+   /* @Test
+    void addComment() {
+        UserDto userDto1 = userService.createUser(new CreateUserDto("test", "test@test.com"));
+        UserDto userDto2 = userService.createUser(new CreateUserDto("test2", "test@test2.com"));
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto1.getId(), createItemDto);
+        BookingDto bookingDto = bookingService.create(userDto2.getId(), new CreateBookingDto(itemsRequestDto.getId(),
+                LocalDateTime.now(), LocalDateTime.now().plusHours(5)));
+        bookingService.update(userDto1.getId(), bookingDto.getId(), true);
+        CreateCommentDto createCommentDto = new CreateCommentDto("testComment");
+        CommentDto commentDto = itemService.addComment(userDto2.getId(), itemsRequestDto.getId(), createCommentDto);
+        assertThat(commentDto.getText(), equalTo("testestComment"));
+        assertThat(commentDto.getAuthorName(), equalTo("test2"));
+    }*/
 }
