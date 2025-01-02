@@ -81,7 +81,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (itemRequest == null) {
             return ItemRequestInItemDto.builder()
                     .id(requestId)
-                    .description("Request not found")
+                    .description("Запрос не найден")
                     .build();
         }
         User user = userRepository.findById(userId).orElseThrow(() ->

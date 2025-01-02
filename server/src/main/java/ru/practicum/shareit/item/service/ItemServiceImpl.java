@@ -164,8 +164,8 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-        boolean hasCompletedBooking = bookingRepository.findAllByBookerIdAndItemIdAndStatusAndEndBefore(
-                        userId, itemId, Status.APPROVED, LocalDateTime.now()).size() > 0;
+        boolean hasCompletedBooking = !bookingRepository.findAllByBookerIdAndItemIdAndStatusAndEndBefore(
+                userId, itemId, Status.APPROVED, LocalDateTime.now()).isEmpty();
         if (!hasCompletedBooking) {
             throw new BadRequestException("Пользователь не может комментировать эту вещь, так как он её не " +
                     "бронировал или срок бронирования не завершён");
