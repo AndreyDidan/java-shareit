@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.comment.repository;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -33,7 +32,6 @@ class CommentRepositoryTest {
         entityManager.persist(item);
         entityManager.persist(comment);
         entityManager.flush();
-
         List<Comment> comments = commentRepository.findAllByItemId(item.getId());
         assertThat(comments.size(), equalTo(1));
         assertThat(comments.getFirst(), equalTo(comment));
