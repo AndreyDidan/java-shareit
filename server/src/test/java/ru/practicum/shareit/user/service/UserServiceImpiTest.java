@@ -1,11 +1,13 @@
 package ru.practicum.shareit.user.service;
 
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.DuplicatedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.CreateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -45,6 +47,13 @@ class UserServiceImpiTest {
         assertNotNull(userDto);
         assertThat(userDto.getName(), equalTo(createUserDto.getName()));
         assertThat(userDto.getEmail(), equalTo(createUserDto.getEmail()));
+    }
+
+    @Test
+    void createUserDuplicateException() {
+        UserDto userDto = userService.createUser(createUserDto);
+        CreateUserDto createItemDto1 = new CreateUserDto("Tester", "andrey@mail.ru");
+        Assertions.assertThrows(DuplicatedException.class, () -> userService.createUser(createItemDto1));
     }
 
     @Test

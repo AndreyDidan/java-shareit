@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -56,6 +57,14 @@ class ItemServiceImplTest {
         assertThat(itemsRequestDto.getName(), equalTo(createItemDto.getName()));
         assertThat(itemsRequestDto.getDescription(), equalTo(createItemDto.getDescription()));
     }
+
+    @Test
+    void createItemValidationException() {
+        CreateItemDto createItemDto1 = new CreateItemDto(null, "testDescription", true, null,
+                null);
+        Assertions.assertThrows(ValidationException.class, () -> itemService.createItem(userDto.getId(), createItemDto1));
+    }
+
 
     @Test
     void getItemById() {
