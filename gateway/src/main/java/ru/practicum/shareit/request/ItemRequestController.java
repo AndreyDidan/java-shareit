@@ -10,16 +10,17 @@ import ru.practicum.shareit.request.dto.CreateItemRequestDto;
 @RequiredArgsConstructor
 public class ItemRequestController {
     private final ItemRequestClient itemRequestClient;
+
+    @GetMapping
+    public ResponseEntity<Object> findByAuthor(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemRequestClient.getUserRequests(userId);
+    }
+
     @PostMapping
     public ResponseEntity<Object> create(@RequestHeader("X-Sharer-User-Id") Long userId,
                                          @RequestBody CreateItemRequestDto createItemRequestDto
     ) {
         return itemRequestClient.create(userId, createItemRequestDto);
-    }
-
-    @GetMapping
-    public ResponseEntity<Object> findByAuthor(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemRequestClient.getUserRequests(userId);
     }
 
     @GetMapping("/all")
