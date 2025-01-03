@@ -65,14 +65,13 @@ class ItemRequestServiceImplTest {
 
     @Test
     void getAllRequests() {
-        Long id = itemRequestService.create(userDto.getId(), createItemRequestDto).getId();
-
-        List<ItemRequestInItemDto> requestDto1 = itemRequestService.getUserRequests(userDto.getId());
-
-        assertThat(requestDto1.size(), equalTo(1));
-        assertThat(requestDto1.getFirst().getId(), equalTo(id));
-        assertThat(requestDto1.getFirst().getDescription(), equalTo(createItemRequestDto.getDescription()));
-        assertThat(requestDto1.getFirst().getRequestor().getId(), equalTo(userDto.getId()));
+        UserDto secondUser = userService.createUser(new CreateUserDto("Oleg", "oleg@mail.ru"));
+        Long requestId = itemRequestService.create(secondUser.getId(), createItemRequestDto).getId();
+        List<ItemRequestInItemDto> requestDtoList = itemRequestService.getAllRequests(userDto.getId(), 0, 10);
+        assertThat(requestDtoList.size(), equalTo(1));
+        assertThat(requestDtoList.get(0).getId(), equalTo(requestId));
+        assertThat(requestDtoList.get(0).getDescription(), equalTo(createItemRequestDto.getDescription()));
+        assertThat(requestDtoList.get(0).getRequestor().getId(), equalTo(secondUser.getId()));
     }
 
     @Test

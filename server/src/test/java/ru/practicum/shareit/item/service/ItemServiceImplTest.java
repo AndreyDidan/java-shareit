@@ -7,9 +7,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.comment.dto.CommentDto;
+import ru.practicum.shareit.item.comment.dto.CreateCommentDto;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -19,6 +23,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -125,17 +130,19 @@ class ItemServiceImplTest {
         });
     }
 
-   /* @Test
+    @Test
     void addComment() {
         UserDto userDto1 = userService.createUser(new CreateUserDto("test", "test@test.com"));
-        UserDto userDto2 = userService.createUser(new CreateUserDto("test2", "test@test2.com"));
+        UserDto userDto2 = userService.createUser(new CreateUserDto("test2", "test2@test.com"));
         ItemsRequestDto itemsRequestDto = itemService.createItem(userDto1.getId(), createItemDto);
-        BookingDto bookingDto = bookingService.create(userDto2.getId(), new CreateBookingDto(itemsRequestDto.getId(),
-                LocalDateTime.now(), LocalDateTime.now().plusHours(5)));
+        BookingDto bookingDto = bookingService.create(userDto2.getId(),
+                new CreateBookingDto(itemsRequestDto.getId(),
+                        LocalDateTime.now().minusDays(1),
+                        LocalDateTime.now()));
         bookingService.update(userDto1.getId(), bookingDto.getId(), true);
         CreateCommentDto createCommentDto = new CreateCommentDto("testComment");
         CommentDto commentDto = itemService.addComment(userDto2.getId(), itemsRequestDto.getId(), createCommentDto);
-        assertThat(commentDto.getText(), equalTo("testestComment"));
+        assertThat(commentDto.getText(), equalTo("testComment"));
         assertThat(commentDto.getAuthorName(), equalTo("test2"));
-    }*/
+    }
 }
