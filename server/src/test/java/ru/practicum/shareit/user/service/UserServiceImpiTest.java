@@ -69,6 +69,15 @@ class UserServiceImpiTest {
     }
 
     @Test
+    void updateUserDuplicateException() {
+        Long id = userService.createUser(createUserDto).getId();
+        CreateUserDto newUserDto = new CreateUserDto("newAndrey" ,"testandrey@mail.ru");
+        Long id1 = userService.createUser(newUserDto).getId();
+        UserDto newUserDto1 = new UserDto(null, "test", "andrey@mail.ru");
+        Assertions.assertThrows(DuplicatedException.class, () -> userService.updateUser(id, newUserDto1));
+    }
+
+    @Test
     void deleteUser() {
         Long id = userService.createUser(createUserDto).getId();
         userService.deleteUser(id);

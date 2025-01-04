@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,25 @@ class BookingServiceImplTest {
         assertThat(bookingDto.getItem().getId(), equalTo(createBookingDto.getItemId()));
         assertThat(bookingDto.getBooker().getId(), equalTo(userDto.getId()));
         assertThat(bookingDto.getStatus(), equalTo(Status.WAITING));
+    }
+
+    @Test
+    void findBookingByIdBadRequest() {
+        Long id = bookingService.create(userDto.getId(), createBookingDto).getId();
+        UserDto userDto1 = userService.createUser(new CreateUserDto("Andrey1", "andrey1@mail.ru"));
+        Assertions.assertThrows(BadRequestException.class, () -> bookingService.findBookingById(userDto1.getId(), id));
+    }
+
+    @Test
+    void getBookingsForItem() {
+        UserDto userDto1 = userService.createUser(new CreateUserDto("Andrey1", "andrey1@mail.ru"));
+        CreateBookingDto createBookingDto1 = new CreateBookingDto(itemsRequestDto.getId(), LocalDateTime.now().plusHours(30),
+                LocalDateTime.now().plusHours(35));
+        Long id = bookingService.create(userDto.getId(), createBookingDto).getId();
+        Long id1 = bookingService.create(userDto1.getId(), createBookingDto1).getId();
+        List<BookingDto> bookingDtoList = bookingService.getBookingsForItem(itemsRequestDto.getId());
+
+        assertThat(bookingDtoList.size(), equalTo(2));
     }
 
     @Test

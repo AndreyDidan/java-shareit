@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
@@ -18,6 +19,8 @@ import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemCommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemsRequestDto;
+import ru.practicum.shareit.request.dto.CreateItemRequestDto;
+import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.dto.CreateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -44,6 +47,9 @@ class ItemServiceImplTest {
     @Autowired
     BookingService bookingService;
 
+    @Autowired
+    ItemRequestService itemRequestService;
+
     private CreateItemDto createItemDto;
     private UserDto userDto;
     private ItemDto itemDto;
@@ -60,6 +66,17 @@ class ItemServiceImplTest {
         ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
         assertThat(itemsRequestDto.getName(), equalTo(createItemDto.getName()));
         assertThat(itemsRequestDto.getDescription(), equalTo(createItemDto.getDescription()));
+    }
+
+    @Test
+    void createItemInFindRequest() {
+        CreateItemRequestDto createItemRequestDto = new CreateItemRequestDto("testRequestDescription");
+        Long id = itemRequestService.create(userDto.getId(), createItemRequestDto).getId();
+        CreateItemDto createItemDto = new CreateItemDto("testItem", "testDescription", true, id);
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
+        assertThat(itemsRequestDto.getName(), equalTo(createItemDto.getName()));
+        assertThat(itemsRequestDto.getDescription(), equalTo(createItemDto.getDescription()));
+        assertThat(itemsRequestDto.getRequestId(), equalTo(createItemDto.getRequestId()));
     }
 
     @Test
@@ -96,6 +113,12 @@ class ItemServiceImplTest {
     void search() {
         ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
         assertThat(itemService.search("test"), equalTo(List.of(itemsRequestDto)));
+    }
+
+    @Test
+    void searchNull() {
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
+        assertThat(itemService.search(null), equalTo(List.of()));
     }
 
     @Test
@@ -145,9 +168,30 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void addCommentBadRequest() {
+        UserDto userDto1 = userService.createUser(new CreateUserDto("test", "test@test.com"));
+        UserDto userDto2 = userService.createUser(new CreateUserDto("test2", "test2@test.com"));
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto1.getId(), createItemDto);
+        BookingDto bookingDto = bookingService.create(userDto2.getId(),
+                new CreateBookingDto(itemsRequestDto.getId(),
+                        LocalDateTime.now().minusDays(1),
+                        LocalDateTime.now()));
+        bookingService.update(userDto1.getId(), bookingDto.getId(), true);
+        CreateCommentDto createCommentDto = new CreateCommentDto("testComment");
+        Assertions.assertThrows(BadRequestException.class, () -> itemService.addComment(userDto1.getId(), itemsRequestDto.getId(), createCommentDto));
+    }
+
+    @Test
     void deleteItem() {
         ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
         itemService.deleteItem(userDto.getId(), itemsRequestDto.getId());
         Assertions.assertThrows(NotFoundException.class, () -> itemService.getItemById(itemsRequestDto.getId(), userDto.getId()));
+    }
+
+    @Test
+    void deleteItemUserNotHave() {
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
+        UserDto userDto2 = userService.createUser(new CreateUserDto("test2", "test2@test.com"));
+        Assertions.assertThrows(ValidationException.class, () -> itemService.deleteItem(userDto2.getId(), itemsRequestDto.getId()));
     }
 }
