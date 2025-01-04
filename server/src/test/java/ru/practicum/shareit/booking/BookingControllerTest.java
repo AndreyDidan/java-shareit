@@ -72,6 +72,22 @@ class BookingControllerTest {
     }
 
     @Test
+    void createBookingBadRequest() throws Exception {
+        CreateBookingDto request = new CreateBookingDto();
+        request.setItemId(1L);
+        request.setStart(LocalDateTime.now());
+        request.setEnd(LocalDateTime.now().minusHours(25));
+
+        when(bookingService.create(anyLong(), any())).thenReturn(bookingDto);
+        mvc.perform(post("/bookings").content(mapper.writeValueAsString(request))
+                        .header(header, 1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void approveBooking() throws Exception {
         when(bookingService.update(anyLong(), anyLong(), anyBoolean())).thenReturn(bookingDto);
         mvc.perform(patch("/bookings/{id}", 1).param("approved", "true").header(header, 1)

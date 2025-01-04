@@ -143,4 +143,11 @@ class ItemServiceImplTest {
         assertThat(commentDto.getText(), equalTo("testComment"));
         assertThat(commentDto.getAuthorName(), equalTo("test2"));
     }
+
+    @Test
+    void deleteItem() {
+        ItemsRequestDto itemsRequestDto = itemService.createItem(userDto.getId(), createItemDto);
+        itemService.deleteItem(userDto.getId(), itemsRequestDto.getId());
+        Assertions.assertThrows(NotFoundException.class, () -> itemService.getItemById(itemsRequestDto.getId(), userDto.getId()));
+    }
 }
