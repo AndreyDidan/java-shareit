@@ -63,8 +63,7 @@ class ItemControllerTest {
 
         itemsRequestDto = new ItemsRequestDto(1L, "test", "test", true,
                 List.of(), null);
-        createItemDto = new CreateItemDto("test", "test", true,
-                List.of(), null);
+        createItemDto = new CreateItemDto("test", "test", true, null);
 
         commentDto = new CommentDto(1L, "test", itemDto.getId(), user.getName(), LocalDateTime.now());
     }

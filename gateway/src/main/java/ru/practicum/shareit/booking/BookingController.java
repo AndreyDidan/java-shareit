@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
-import ru.practicum.shareit.exception.BadRequestException;
 
 @RestController
 @RequestMapping(path = "/bookings")
@@ -20,9 +19,6 @@ public class BookingController {
     public ResponseEntity<Object> createBooking(@RequestHeader("X-Sharer-User-Id") Long bookerId,
                                                 @Valid @RequestBody CreateBookingDto createBookingDto
                                                 ) {
-        if (createBookingDto.getEnd().isBefore(createBookingDto.getStart())) {
-            throw new BadRequestException("Дата окончания бронирования не может быть раньше даты начала.");
-        }
         return bookingClient.create(bookerId, createBookingDto);
     }
 

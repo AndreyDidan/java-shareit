@@ -52,7 +52,7 @@ class BookingServiceImplTest {
     void setUp() {
         userDto = userService.createUser(new CreateUserDto("Andrey", "andrey@mail.ru"));
         itemsRequestDto = itemService.createItem(userDto.getId(), new CreateItemDto("testNameItem",
-                "testDescriptionItem", true, List.of(), null));
+                "testDescriptionItem", true, null));
         createBookingDto = new CreateBookingDto(itemsRequestDto.getId(), LocalDateTime.now(),
                 LocalDateTime.now().plusHours(25));
     }

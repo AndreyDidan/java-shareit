@@ -50,8 +50,7 @@ class ItemServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        createItemDto = new CreateItemDto("testItem", "testDescription", true, null,
-                null);
+        createItemDto = new CreateItemDto("testItem", "testDescription", true, null);
         userDto = userService.createUser(new CreateUserDto("andrey", "andrey@mail.ru"));
         itemDto = new ItemDto(1L, "item", "item descr", true, null, userDto.getId());
     }
@@ -65,8 +64,7 @@ class ItemServiceImplTest {
 
     @Test
     void createItemValidationException() {
-        CreateItemDto createItemDto1 = new CreateItemDto(null, "testDescription", true, null,
-                null);
+        CreateItemDto createItemDto1 = new CreateItemDto(null, "testDescription", true, null);
         Assertions.assertThrows(ValidationException.class, () -> itemService.createItem(userDto.getId(), createItemDto1));
     }
 
