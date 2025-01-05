@@ -15,7 +15,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleInternalServerException(ValidationException e) {
+    public ErrorResponse handleInternalServerException(RuntimeException  e) {
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
     }
 }
